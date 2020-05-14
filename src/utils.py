@@ -1,5 +1,11 @@
+import re
+import numpy as np
+import pandas as pd
+from pymystem3 import Mystem
+from nltk.corpus import stopwords
 
-def clean_numbers(text):
+
+def clean_numbers(test:str) -> str:
     text = re.sub('\d{5+}', '#####', text )
     text = re.sub('\d{4}', '####', text )
     text = re.sub('\d{3}', '###', text )
@@ -7,13 +13,13 @@ def clean_numbers(text):
     text = re.sub('\d', '#', text)
     return text
 
-def clean_text(text):
+def clean_text(test:str) -> str:
     text = str(text).lower()
     text = re.sub('[^а-я0-9]', ' ', text)
     text = clean_numbers(text)
     return text
 
-def lemmatize_rus_text(text):
+def lemmatize_rus_text(test:str) -> str:
     mystem = Mystem()
     russian_stopwords = stopwords.words("russian")
     tokens = mystem.lemmatize(text.lower())
@@ -23,9 +29,14 @@ def lemmatize_rus_text(text):
     
     return text
 
-def tokenize_ru(text):
-    tokens = text_to_word_sequence(text)
+def tokenize_ru(test:str) -> list:
+    tokens = text.split()
     return tokens
+
+def create_map_dict(topic:list) -> dict:
+    numbers = np.arange(len(topic))
+    topic_dict = dict(zip(topic, numbers))
+    return topic_dict
 
 def mean_vector(tokens):
     vec = 0
