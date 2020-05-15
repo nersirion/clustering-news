@@ -1,9 +1,11 @@
 import re
+import itertools
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from pymystem3 import Mystem
 from nltk.corpus import stopwords
-
+from sklearn.cluster import MiniBatchKMeans
 
 def clean_numbers(text:str) -> str:
     text = re.sub('\d{5+}', '#####', text )
@@ -36,7 +38,7 @@ def create_map_dict(topic:list) -> dict:
     topic_dict = dict(zip(topic, numbers))
     return topic_dict
 
-def mean_vector(tokens):
+def mean_vector(tokens:list) -> np.array:
     vec = 0
     skip_words = 0
     for word in tokens:
@@ -46,60 +48,58 @@ def mean_vector(tokens):
             skip_words+=1
     return vec/(len(tokens)-skip_words)
 
-def get_top_keywords(data, clusters, words, n_terms):
+def df_top_keywords(data, clusters:list, words, clusters_names:dict):
     df = pd.DataFrame(data.todense()).groupby(clusters).mean()
-    
-    for i,r in df.iterrows():
-        print('\nCluster {}'.format(i+1))
-        print(','.join([words[t] for t in np.argsort(r)[-n_terms:]]))
-        
-def show_chart_clusters(kmeans, clust_labels, data_matrix):
-    clust_centers = kmeans.cluster_centers_
+    data = []
+    for i, row in df.iterrows():
+        data.append([words[t] for t in np.argsort(row)[-10:]])
+    df = pd.DataFrame(data).rename(clusters_names).T
+    df.to_csv('dataset/top10words.csv', index=False)
 
-    embeddings_to_tsne = np.concatenate((data_matrix ,clust_centers), axis=0)
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          cmap=plt.cm.Reds):
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        title = "Normalized confusion matrix"
+    else:
+        title = 'Confusion matrix, without normalization'
 
-    tSNE =  TSNE(n_components=2, perplexity=15)
-    tsne_embeddings = tSNE.fit_transform(embeddings_to_tsne)
-    tsne_embeddings, centroids_embeddings = np.split(tsne_embeddings, [len(clust_labels)], axis=0)
-    
-    clust_indices = np.unique(clust_labels)
+    plt.figure()
+    plt.figure(figsize=(10, 8))
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
 
-    clusters = {clust_ind : [] for clust_ind in clust_indices}
-    for emb, label in zip(tsne_embeddings, clust_labels):
-        clusters[label].append(emb)
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
 
-    for key in clusters.keys():
-        clusters[key] = np.array(clusters[key])
-    colors = cm.rainbow(np.linspace(0, 1, len(clust_indices)))
-    
-    plt.figure(figsize=(10,10))
-    for ind, color in zip(clust_indices, colors):
-        x = clusters[ind][:,0]
-        y = clusters[ind][:,1]
-        plt.scatter(x, y, color=color)
-
-        centroid = centroids_embeddings[ind]
-        plt.scatter(centroid[0],centroid[1], color='b', marker='x', s=100)
-
-    plt.show()
-
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.tight_layout()
 
 def fit_kmeans(matrix, n_cluster:int):
-    km = MiniBatchKmeans(n_cluster = n_cluster, random_state=999)
-    kmeans_matrix = km.fit_predict(matrix)
-    return kmeans_matrix
+    km = MiniBatchKMeans(n_clusters = n_cluster, random_state=999)
+    labels = km.fit_predict(matrix)
+    return labels
 
+def get_lda_labels(lda_matrix) -> list:
+    return [np.argmax(i) for i in lda_matrix]
 
+def delete_pos_tag(model_vocab:dict) -> dict:
+    new_vocab = {}
+    for keyword, vec in model_vocab.items():
+        keyword = re.sub('[^а-я]', '',keyword)
+        new_vocab[keyword] = vec
+    model_vocab = new_vocab
+    return model_vocab
 
-def cut_often_and_rare_words(tf_idf, lower_thresh, upper_thresh):
-    not_often = tf_idf.idf_ > lower_thresh
-    not_rare = tf_idf.idf_ < upper_thresh
-    mask = not_often * not_rare
-    good_words = np.array(td_idf.get_feature_names())[mask]
-    return good_words
-
-def good_words_to_vocab(good_words:np.array) -> dict:
-    vocab = dict(zip(good_words, np.arange(len(good_words))))
-    return vocab
-
-
+def save_model(model, name:str = 'lda'):
+    joblib.dump(model, f'models/{name}')

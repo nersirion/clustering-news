@@ -15,7 +15,7 @@ def preprocessing(df)
     return df
 
 if __name__ == "__main__":
-    df = pd.read_csv(r"D:/NLP/Dataset/lenta-news-50k.csv")
+    df = pd.read_csv(r"D:/NLP/Dataset/lenta-news-25k.csv")
     df = preprocessing(df)
-    df.to_csv("lenta-news-50k.csv", index=False)
+    df.to_csv("lenta-news-25k.csv", index=False)
 
