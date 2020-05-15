@@ -1,12 +1,17 @@
+import os
+from multiprocessing import Pool
 import pandas as pd
 from utils import clean_text, lemmatize_rus_text, tokenize_ru
 
 
 
-def preprocessing(df):
+def preprocessing(df)
     df["text"] = df["text"].apply(clean_text)
-    df["text"] = df["text"].apply(lemmatize_rus_text)
-    df["tokenize_text"] = df["text"].apply(tokenize_ru)
+    text = df["text"].values
+    with Pool(processes=os.cpu_count()-1) as pool:
+        lemma = pool.map(lemmatize_rus_text, text):
+    df["lemma"] = lemma
+    df["tokenize_text"] = df["lemma"].apply(tokenize_ru)
     return df
 
 if __name__ == "__main__":
