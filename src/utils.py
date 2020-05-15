@@ -5,7 +5,7 @@ from pymystem3 import Mystem
 from nltk.corpus import stopwords
 
 
-def clean_numbers(test:str) -> str:
+def clean_numbers(text:str) -> str:
     text = re.sub('\d{5+}', '#####', text )
     text = re.sub('\d{4}', '####', text )
     text = re.sub('\d{3}', '###', text )
@@ -13,23 +13,21 @@ def clean_numbers(test:str) -> str:
     text = re.sub('\d', '#', text)
     return text
 
-def clean_text(test:str) -> str:
-    text = str(text).lower()
+def clean_text(text:str) -> str:
+    text = text.lower()
     text = re.sub('[^а-я0-9]', ' ', text)
     text = clean_numbers(text)
     return text
 
-def lemmatize_rus_text(test:str) -> str:
+def lemmatize_rus_text(text:str) -> str:
     mystem = Mystem()
     russian_stopwords = stopwords.words("russian")
     tokens = mystem.lemmatize(text.lower())
-    tokens = [token for token in tokens if token not in russian_stopwords              and token != " "] 
-
+    tokens = [token for token in tokens if token not in russian_stopwords and token != " "] 
     text = " ".join(tokens)
-    
     return text
 
-def tokenize_ru(test:str) -> list:
+def tokenize_ru(text:str) -> list:
     tokens = text.split()
     return tokens
 
