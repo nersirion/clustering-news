@@ -1,7 +1,7 @@
 import os
 from multiprocessing import Pool
 import pandas as pd
-from src.utils import clean_text, lemmatize_rus_text, tokenize_ru
+from utils import clean_text, lemmatize_rus_text, tokenize_ru
 
 
 
@@ -15,7 +15,7 @@ def preprocessing(df):
     return df
 
 if __name__ == "__main__":
-    df = pd.read_csv(r"D:/NLP/Dataset/lenta-news-25k.csv")
+    df = pd.read_csv(r"D:/NLP/Dataset/lenta-news-50k.csv", nrows=100)
     df = preprocessing(df)
-    df.to_csv("lenta-news-25k.csv", index=False)
+    df.to_csv("lenta-news-15k.csv", index=False)
 
