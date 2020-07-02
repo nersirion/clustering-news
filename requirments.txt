@@ -1,0 +1,9 @@
+joblib
+matplotlib
+pandas
+sklearn
+pymystem3
+nltk
+gensim
+tqdm
+zipfile
