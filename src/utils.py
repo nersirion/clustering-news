@@ -1,5 +1,6 @@
 import re
 import itertools
+import joblib
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -25,7 +26,7 @@ def lemmatize_rus_text(text:str) -> str:
     mystem = Mystem()
     russian_stopwords = stopwords.words("russian")
     tokens = mystem.lemmatize(text.lower())
-    tokens = [token for token in tokens if token not in russian_stopwords and token != " "] 
+    tokens = [token for token in tokens if token not in russian_stopwords and token != " "]
     text = " ".join(tokens)
     return text
 
